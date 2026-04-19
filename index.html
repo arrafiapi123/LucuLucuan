@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katyana's Quiz! 💜</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --kahoot-purple: #46178f; 
+            --kahoot-light: #eb670f;
+            --kahoot-blue: #1368ce;
+            --kahoot-green: #26890c;
+            --kahoot-red: #e21b3c;
+        }
+        
+        body { 
+            font-family: 'Open Sans', sans-serif; 
+            background: var(--kahoot-purple); 
+            color: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden; 
+        }
+
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            width: 90%; 
+            max-width: 500px; 
+            text-align: center; 
+            color: #333;
+            box-shadow: 0 10px 0px rgba(0,0,0,0.2);
+        }
+
+        h2 { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 20px; color: #333; }
+        
+        .progress-bar {
+            background: #eee;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: var(--kahoot-blue);
+            height: 100%;
+            width: 0%;
+            transition: 0.3s;
+        }
+
+        .options-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 20px;
+            position: relative;
+            min-height: 150px;
+        }
+
+        button { 
+            padding: 20px 10px; 
+            border: none; 
+            border-radius: 5px; 
+            color: white; 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer; 
+            transition: transform 0.1s, brightness 0.2s;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.2);
+        }
+
+        button:active { transform: translateY(4px); box-shadow: none; }
+        button:hover { brightness: 1.1; }
+
+        /* Kahoot Button Colors */
+        .btn-0 { background-color: var(--kahoot-red); }
+        .btn-1 { background-color: var(--kahoot-blue); }
+        .btn-trap { position: fixed; z-index: 1000; width: 180px; background-color: var(--kahoot-light) !important; }
+        
+        .btn-start { background-color: var(--kahoot-green); width: 100%; font-size: 1.2rem; }
+
+        .hidden { display: none; }
+
+        .dashboard-card { background: #f2f2f2; border-radius: 10px; padding: 15px; margin: 15px 0; color: #333; text-align: left; border-left: 5px solid var(--kahoot-purple); }
+        .dashboard-card b { color: var(--kahoot-purple); font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundboard.com/handler/Downloadaudio.ashx?id=614347" type="audio/mpeg">
+    </audio>
+
+    <div id="intro" class="card">
+        <div style="background: var(--kahoot-purple); color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-weight: 800; font-family: 'Montserrat';">KAHOOT!</div>
+        <h2>Hai Katyana Arinda!</h2>
+        <p>Nurut aja disuruh buka ginian, tapi karena udah dibuka, kamu <b>wajib</b> jawab semua pertanyaan ya!</p>
+        <button class="btn-start" onclick="startQuiz()">Oke, Siapa Takut</button>
+    </div>
+
+    <div id="quiz-box" class="card hidden">
+        <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
+        <h2 id="question-text">Loading...</h2>
+        <div class="options-grid" id="options-container"></div>
+    </div>
+
+    <div id="dashboard" class="card hidden">
+        <h2 style="color: var(--kahoot-purple);">QUIZ FINISHED!</h2>
+        <div class="dashboard-card">
+            <b>Profil:</b> <span id="profile-type">Analyzing...</span><br>
+            <p id="profile-desc" style="font-size: 0.9rem; margin-top: 5px;"></p>
+        </div>
+        <div style="background: var(--kahoot-green); color: white; padding: 10px; border-radius: 5px; font-weight: bold;">
+            Score: 1,000,000 pts (PERFECT)
+        </div>
+        <p style="margin-top: 20px; font-weight: 800;">Bisa kali ye kita ketemuan lagi nanti.</p>
+        <button class="btn-start" onclick="location.reload()">Play Again</button>
+    </div>
+
+<script>
+    const questions = [
+        { q: "Bubur ayam: diaduk atau dipisah?", a: ["Diaduk", "Dipisah"], r: "Okey, selera pemberani." },
+        { q: "Tim martabak manis atau martabak telor?", a: ["Manis", "Telor"], r: "Noted, martabak is life." },
+        { q: "Kalo jadi hewan, mau jadi kucing atau panda?", a: ["Panda", "Kucing"], r: "Fix, lucu banget sih." },
+        { q: "Mandi rutin atau pas mau pergi aja?", a: ["Mandi rutin", "Pas mau pergi"], r: "Jujur itu hebat, Katyana." },
+        { q: "Earphone atau speaker?", a: ["Earphone", "Speaker"], r: "Dunia milik berdua ya." },
+        { q: "Cek HP atau bengong dulu?", a: ["Cek HP", "Bengong"], r: "Bengong itu estetik." },
+        { q: "Nasi padang: bungkus atau makan ditempat?", a: ["Bungkus", "Makan ditempat"], r: "Porsi bungkus emang gila." },
+        { q: "Menghilang atau baca pikiran?", a: ["Menghilang", "
