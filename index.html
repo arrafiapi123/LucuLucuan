@@ -35,32 +35,16 @@
             text-align: center; 
             color: #333;
             box-shadow: 0 10px 0px rgba(0,0,0,0.2);
+            z-index: 10;
+            position: relative;
         }
 
         h2 { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.5rem; margin-bottom: 20px; color: #333; }
         
-        .progress-bar {
-            background: #eee;
-            height: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            background: var(--kahoot-blue);
-            height: 100%;
-            width: 0%;
-            transition: 0.3s;
-        }
+        .progress-bar { background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { background: var(--kahoot-blue); height: 100%; width: 0%; transition: 0.3s; }
 
-        .options-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin-top: 20px;
-            position: relative;
-            min-height: 150px;
-        }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; min-height: 150px; }
 
         button { 
             padding: 20px 10px; 
@@ -76,32 +60,27 @@
         }
 
         button:active { transform: translateY(4px); box-shadow: none; }
-        button:hover { brightness: 1.1; }
-
-        /* Kahoot Button Colors */
         .btn-0 { background-color: var(--kahoot-red); }
         .btn-1 { background-color: var(--kahoot-blue); }
         .btn-trap { position: fixed; z-index: 1000; width: 180px; background-color: var(--kahoot-light) !important; }
-        
         .btn-start { background-color: var(--kahoot-green); width: 100%; font-size: 1.2rem; }
-
         .hidden { display: none; }
 
         .dashboard-card { background: #f2f2f2; border-radius: 10px; padding: 15px; margin: 15px 0; color: #333; text-align: left; border-left: 5px solid var(--kahoot-purple); }
-        .dashboard-card b { color: var(--kahoot-purple); font-size: 1.1rem; }
+        
+        /* Menyembunyikan player YouTube */
+        #yt-player { position: absolute; top: -9999px; left: -9999px; visibility: hidden; }
     </style>
 </head>
 <body>
 
-    <audio id="bgMusic" loop>
-        <source src="https://www.soundboard.com/handler/Downloadaudio.ashx?id=614347" type="audio/mpeg">
-    </audio>
+    <div id="yt-player"></div>
 
     <div id="intro" class="card">
         <div style="background: var(--kahoot-purple); color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-weight: 800; font-family: 'Montserrat';">KAHOOT!</div>
         <h2>Hai Katyana Arinda!</h2>
         <p>Nurut aja disuruh buka ginian, tapi karena udah dibuka, kamu <b>wajib</b> jawab semua pertanyaan ya!</p>
-        <button class="btn-start" onclick="startQuiz()">Oke, Siapa Takut</button>
+        <button class="btn-start" id="startBtn">Oke, Siapa Takut</button>
     </div>
 
     <div id="quiz-box" class="card hidden">
@@ -116,14 +95,33 @@
             <b>Profil:</b> <span id="profile-type">Analyzing...</span><br>
             <p id="profile-desc" style="font-size: 0.9rem; margin-top: 5px;"></p>
         </div>
-        <div style="background: var(--kahoot-green); color: white; padding: 10px; border-radius: 5px; font-weight: bold;">
-            Score: 1,000,000 pts (PERFECT)
-        </div>
         <p style="margin-top: 20px; font-weight: 800;">Bisa kali ye kita ketemuan lagi nanti.</p>
         <button class="btn-start" onclick="location.reload()">Play Again</button>
     </div>
 
 <script>
+    // YouTube API Setup
+    var player;
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('yt-player', {
+            height: '0',
+            width: '0',
+            videoId: '7W59m775N60', // ID Video Musik Kahoot
+            events: {
+                'onReady': onPlayerReady
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        // Player siap, musik belum jalan sebelum klik
+    }
+
     const questions = [
         { q: "Bubur ayam: diaduk atau dipisah?", a: ["Diaduk", "Dipisah"], r: "Okey, selera pemberani." },
         { q: "Tim martabak manis atau martabak telor?", a: ["Manis", "Telor"], r: "Noted, martabak is life." },
@@ -132,4 +130,87 @@
         { q: "Earphone atau speaker?", a: ["Earphone", "Speaker"], r: "Dunia milik berdua ya." },
         { q: "Cek HP atau bengong dulu?", a: ["Cek HP", "Bengong"], r: "Bengong itu estetik." },
         { q: "Nasi padang: bungkus atau makan ditempat?", a: ["Bungkus", "Makan ditempat"], r: "Porsi bungkus emang gila." },
-        { q: "Menghilang atau baca pikiran?", a: ["Menghilang", "
+        { q: "Menghilang atau baca pikiran?", a: ["Menghilang", "Baca pikiran"], r: "Jangan ilang dari aku ya." },
+        { q: "Kehujanan atau kepanasan?", a: ["Kehujanan", "Kepanasan"], r: "Sini aku payungin." },
+        { q: "Balas chat kilat atau nunggu mood?", a: ["Kilat", "Nunggu mood"], r: "Semoga aku masuk prioritas." },
+        { q: "Pernah kepikiran pindah ke Mars?", a: ["Pernah", "Nggak"], r: "Sama aku aja di Bumi." },
+        { q: "Sekali jepret atau 100 kali take?", a: ["Sekali jepret", "100 kali"], r: "Cakep mah bebas." },
+        { q: "Cowok jago masak atau jago game?", a: ["Jago masak", "Jago game"], r: "Okey, gue belajar masak." },
+        { q: "Alien itu beneran ada?", a: ["Ada", "Nggak"], r: "Ada, lagi liatin kecantikanmu." },
+        { q: "Uang 100rb: sumbangin atau jajanin?", a: ["Sumbangin", "Jajanin"], r: "Baik banget (atau laper)." },
+        { q: "Cokelat atau vanila?", a: ["Cokelat", "Vanila"], r: "Manis kayak yang jawab." },
+        { q: "Lo ngerasa pinter gak?", a: ["Pinter", "Biasa aja"], trap: true, r: "Emang pinter banget!" },
+        { q: "Sering kepikiran gue gak?", a: ["Sering banget", "Sering"], r: "Ciee, sama dong." },
+        { q: "Objektif: Lu cantik atau cantik banget?", a: ["Cantik Banget", "Standar"], trap: true, r: "Nah, bener kan!" },
+        { q: "Vibe hari Sabtu enaknya jalan atau rebahan?", a: ["Jalan-jalan", "Rebahan"], r: "Jalan yuk? Hehe." }
+    ];
+
+    const profiles = [
+        { type: "Kucing Kalem", desc: "Kelihatannya cool, padahal random parah. Suka diperhatiin tapi gengsi ngomong." },
+        { type: "Panda Ambisius", desc: "Santai tapi seleranya tinggi. Kalau udah nyaman bakal jadi orang paling seru sedunia." },
+        { type: "Top-Tier Human", desc: "Tipe manusia langka dengan frekuensi otak yang unik. 100% idaman gue." }
+    ];
+
+    let currentIdx = 0;
+    const startBtn = document.getElementById('startBtn');
+
+    startBtn.addEventListener('click', function() {
+        if(player) {
+            player.playVideo();
+        }
+        document.getElementById('intro').classList.add('hidden');
+        document.getElementById('quiz-box').classList.remove('hidden');
+        loadQuestion();
+    });
+
+    function loadQuestion() {
+        const data = questions[currentIdx];
+        document.getElementById('question-text').innerText = data.q;
+        document.getElementById('fill').style.width = ((currentIdx + 1) / questions.length * 100) + "%";
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+
+        data.a.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.className = `btn-${index}`;
+            
+            if (data.trap && index === 1) {
+                btn.classList.add('btn-trap');
+                btn.onmouseover = moveButton;
+            } else {
+                btn.onclick = () => {
+                    alert(data.r);
+                    next();
+                };
+            }
+            container.appendChild(btn);
+        });
+    }
+
+    function moveButton(e) {
+        const btn = e.target;
+        btn.style.left = Math.random() * (window.innerWidth - 200) + 'px';
+        btn.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+    }
+
+    function next() {
+        currentIdx++;
+        if (currentIdx < questions.length) {
+            loadQuestion();
+        } else {
+            showDashboard();
+        }
+    }
+
+    function showDashboard() {
+        document.getElementById('quiz-box').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        const res = profiles[Math.floor(Math.random() * profiles.length)];
+        document.getElementById('profile-type').innerText = res.type;
+        document.getElementById('profile-desc').innerText = res.desc;
+    }
+</script>
+</body>
+</html>
